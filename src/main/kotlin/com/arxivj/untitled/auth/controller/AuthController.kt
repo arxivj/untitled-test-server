@@ -2,10 +2,13 @@ package com.arxivj.untitled.auth.controller
 
 import com.arxivj.untitled.auth.model.dto.AuthRequest
 import com.arxivj.untitled.auth.model.dto.AuthResponse
+import com.arxivj.untitled.auth.model.dto.UserResponse
 import com.arxivj.untitled.auth.service.AuthService
 import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
@@ -14,9 +17,9 @@ import org.springframework.web.bind.annotation.RestController
 class AuthController(private val authService: AuthService) {
     @PostMapping("/login")
     fun login(@RequestBody authRequest: AuthRequest): ResponseEntity<AuthResponse> {
-//        val authResponse = authService.으아아아(authRequest)
-        // 일단 오고가나 보자구
+
         val platform = authRequest.platform
+
         val authResponse = when (platform) {
             "google" -> AuthResponse(
                 accessToken = "google_accessToken",
@@ -40,5 +43,34 @@ class AuthController(private val authService: AuthService) {
         }
 
         return ResponseEntity.ok(authResponse)
+    }
+
+    @GetMapping("/user")
+    fun getUserByAccessToken(@RequestHeader("Authorization") token: String): ResponseEntity<UserResponse> {
+        val accessToken = token.removePrefix("Bearer ")
+        println("온 토큰 : $accessToken")
+        val userResponse = when (accessToken) {
+            "google_accessToken" -> UserResponse(
+                email = "user@google.com",
+                platform = "google"
+            )
+
+            "apple_accessToken" -> UserResponse(
+                email = "user@apple.com",
+                platform = "apple"
+            )
+
+            "emailpassword_accessToken" -> UserResponse(
+                email = "user@email.com",
+                platform = "emailPassword"
+            )
+
+            else -> UserResponse(
+                email = "unknown_user",
+                platform = "unknown_platform"
+            )
+        }
+
+        return ResponseEntity.ok(userResponse)
     }
 }
